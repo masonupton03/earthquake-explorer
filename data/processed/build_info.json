@@ -1,0 +1,9 @@
+{
+ "raw_rows": 224824,
+ "removed_non_earthquake_or_below_4_5": 125,
+ "final_rows": 224699,
+ "negative_depth_clipped_to_zero": 62,
+ "top_min_events": 500,
+ "offshore_km": 300,
+ "pulled": "2026-09-30"
+}
