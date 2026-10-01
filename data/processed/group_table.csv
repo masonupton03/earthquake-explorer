@@ -1,0 +1,62 @@
+region,events,median_mag,max_mag,median_depth_km,pct_shallow,macro_region,pct_of_events,pct_of_energy,rank_by_events,rank_by_energy
+Indonesia,27806,4.7,9.1,33.0,78.45,Asia,12.37,28.46,1,1
+Japan,19292,4.7,9.1,33.0,85.48,Asia,8.59,18.65,2,2
+Papua New Guinea,13122,4.7,8.0,38.0,70.58,Oceania,5.84,3.05,3,5
+Philippines,11832,4.7,7.7,35.0,75.15,Asia,5.27,1.39,4,12
+Tonga,9738,4.7,8.0,33.0,71.98,Oceania,4.33,1.24,5,14
+Russia,9384,4.7,8.8,33.0,85.14,Asia,4.18,10.88,6,3
+Fiji,8767,4.7,8.2,536.6,16.04,Oceania,3.9,2.18,7,8
+Chile,7586,4.7,8.8,35.0,73.73,South America,3.38,8.65,8,4
+Vanuatu,7126,4.8,7.8,35.0,64.08,Oceania,3.17,1.53,9,11
+United States of America,6917,4.8,8.2,32.3,90.55,North America,3.08,3.01,10,6
+Kermadec Islands,6055,4.7,7.6,20.4,83.29,Pacific Ocean,2.69,0.45,11,21
+South Sandwich Islands,5758,4.7,7.5,33.0,82.72,Atlantic Ocean,2.56,0.44,12,22
+New Zealand,5079,4.7,8.1,33.0,80.65,Pacific Ocean,2.26,1.37,13,13
+Solomon Is.,5066,4.8,8.1,33.0,83.87,Oceania,2.25,1.64,14,10
+Mid-Atlantic Ridge,4408,4.8,7.1,10.0,100.0,Atlantic Ocean,1.96,0.23,15,36
+China,3560,4.7,7.9,10.0,98.93,Asia,1.58,0.71,16,16
+Peru,3533,4.7,8.4,45.8,63.06,South America,1.57,2.96,17,7
+Mexico,3203,4.7,8.2,28.2,85.08,North America,1.43,1.82,18,9
+India,3098,4.7,7.7,30.0,90.45,Asia,1.38,0.37,19,25
+Kuril Islands,2275,4.7,7.4,33.0,85.36,Asia,1.01,0.11,20,50
+Argentina,2244,4.7,7.3,157.6,20.59,South America,1.0,0.2,21,41
+Timor-Leste,2240,4.7,7.5,132.2,32.54,Asia,1.0,0.2,22,40
+N. Mariana Is.,2181,4.7,7.7,45.4,58.83,Oceania,0.97,0.32,23,27
+Iran,2149,4.7,7.7,14.2,98.32,Asia,0.96,0.26,24,31
+Guam,2039,4.7,7.8,35.0,72.93,Oceania,0.91,0.24,25,33
+Taiwan,1904,4.7,7.7,19.55,95.17,Asia,0.85,0.31,26,28
+Greece,1859,4.7,7.0,10.3,95.32,Europe,0.83,0.09,27,57
+New Caledonia,1833,4.8,7.7,10.0,97.98,Oceania,0.82,0.37,28,24
+East Pacific Rise,1810,4.8,7.0,10.0,100.0,Pacific Ocean,0.81,0.11,29,51
+Afghanistan,1670,4.7,7.5,112.4,30.66,Asia,0.74,0.19,30,42
+Mid-Indian Ridge,1659,4.7,6.5,10.0,100.0,Indian Ocean,0.74,0.04,31,73
+Loyalty Islands,1371,4.8,7.7,10.0,92.49,Pacific Ocean,0.61,0.41,32,23
+Colombia,1227,4.7,7.3,48.3,56.89,South America,0.55,0.16,33,46
+Pacific-Antarctic Ridge,1120,5.0,6.7,10.0,100.0,Pacific Ocean,0.5,0.06,34,61
+Nicaragua,1080,4.7,7.7,35.4,78.52,North America,0.48,0.19,35,43
+Reykjanes Ridge,1069,4.6,6.9,10.0,100.0,Atlantic Ocean,0.48,0.02,36,84
+Mariana Islands,1025,4.7,6.9,33.0,77.85,Pacific Ocean,0.46,0.03,37,75
+Turkey,989,4.7,7.6,10.0,98.18,Asia,0.44,0.16,38,45
+Guatemala,965,4.7,7.4,46.6,70.36,North America,0.43,0.1,39,56
+Easter Island,947,4.9,6.9,10.0,100.0,Pacific Ocean,0.42,0.05,40,63
+Banda Sea,920,4.7,7.3,140.65,21.09,Asia,0.41,0.11,41,52
+Pakistan,913,4.7,7.7,17.5,98.14,Asia,0.41,0.27,42,29
+Ecuador,906,4.7,7.8,33.0,75.94,South America,0.4,0.34,43,26
+El Salvador,872,4.7,7.7,52.2,76.15,North America,0.39,0.22,44,39
+Tajikistan,807,4.6,7.2,33.0,64.56,Asia,0.36,0.04,45,71
+Panama,797,4.7,6.7,10.0,99.12,North America,0.35,0.06,46,60
+Southwest Indian Ridge,770,4.7,6.2,10.0,100.0,Indian Ocean,0.34,0.01,47,95
+Carlsberg Ridge,761,4.7,7.6,10.0,100.0,Indian Ocean,0.34,0.1,48,54
+Myanmar,761,4.7,7.7,33.0,71.35,Asia,0.34,0.18,49,44
+Macquarie Island,757,4.8,7.1,10.0,100.0,Indian Ocean,0.34,0.11,50,49
+Micronesia,752,4.7,6.9,22.65,96.41,Pacific Ocean,0.33,0.03,51,76
+Ascension Island,729,4.8,7.1,10.0,100.0,Atlantic Ocean,0.32,0.05,52,62
+South of Africa,634,4.7,6.6,10.0,100.0,Indian Ocean,0.28,0.02,53,88
+Iceland,618,4.6,6.5,10.0,100.0,Europe,0.28,0.01,54,98
+Indian-Antarctic Ridge,597,4.7,6.6,10.0,100.0,Indian Ocean,0.27,0.02,55,85
+Canada,591,4.8,7.8,10.0,100.0,North America,0.26,0.23,56,37
+West Chile Rise,579,4.8,6.7,10.0,100.0,Pacific Ocean,0.26,0.02,57,82
+Wallis and Futuna Is.,572,4.8,6.7,33.0,68.18,Oceania,0.25,0.04,58,69
+Costa Rica,547,4.7,7.6,27.4,92.32,North America,0.24,0.24,59,32
+Balleny Islands,535,4.9,6.7,10.0,100.0,Southern/Arctic Ocean,0.24,0.03,60,80
+Southeast Indian Ridge,529,4.8,7.1,10.0,100.0,Indian Ocean,0.24,0.04,61,72
