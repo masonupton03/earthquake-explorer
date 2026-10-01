@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earthquake Dashboard · M4.5+ 1990–2025</title>
+<meta name="description" content="Interactive dashboard for 224,699 M4.5+ earthquakes (1990–2025): filter, animate on a world map, switch measures and breakdowns.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2710%27 fill=%27%23d95926%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="loading" id="loading"><div><div class="spinner"></div><div id="loadmsg">Loading 224,699 earthquakes…</div></div></div>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="pulse"></span>Earthquake Explorer</a>
+    <a class="link" href="index.html">Report</a>
+    <a class="link active" href="dashboard.html">Dashboard</a>
+    <span class="spacer"></span>
+    <span style="color:var(--muted);font-size:13px">USGS · M4.5+ · 1990–2025</span>
+  </div>
+</nav>
+
+<div class="wrap dash">
+  <!-- ======================= FILTERS ======================= -->
+  <aside class="side" aria-label="Filters">
+    <h2>Filters <button class="btn small" id="reset" type="button">↺ Reset all</button></h2>
+
+    <div class="fgroup">
+      <div class="lab">Years <span class="val" id="yearVal">1990 – 2025</span></div>
+      <div class="range">
+        <div class="track"></div><div class="fill" id="yearFill"></div>
+        <input type="range" id="y0" min="1990" max="2025" value="1990" aria-label="From year">
+        <input type="range" id="y1" min="1990" max="2025" value="2025" aria-label="To year">
+      </div>
+    </div>
+
+    <div class="fgroup">
+      <div class="lab">Country / region <span class="val" id="regionVal">All</span></div>
+      <div class="dd" id="ddRegion"></div>
+    </div>
+
+    <div class="fgroup">
+      <div class="lab">Macro-region <span class="val" id="macroVal">All</span></div>
+      <div class="dd" id="ddMacro"></div>
+    </div>
+
+    <div class="fgroup">
+      <div class="lab">Magnitude class</div>
+      <div class="chips" id="chipsMag"></div>
+    </div>
+
+    <div class="fgroup">
+      <div class="lab">Depth class</div>
+      <div class="chips" id="chipsDepth"></div>
+    </div>
+
+    <div class="fgroup">
+      <div class="lab">Magnitude type</div>
+      <div class="chips" id="chipsMtype"></div>
+    </div>
+
+    <div class="fgroup">
+      <div class="lab">Tsunami flag <span class="badge">2013–2025 only</span></div>
+      <div class="seg" id="segTsu">
+        <button type="button" data-v="all" aria-pressed="true">All</button>
+        <button type="button" data-v="1" aria-pressed="false">Flagged</button>
+        <button type="button" data-v="0" aria-pressed="false">Not flagged</button>
+      </div>
+      <div class="notice" id="tsuNotice"></div>
+    </div>
+
+    <div style="color:var(--muted);font-size:12.5px;border-top:1px solid var(--border-soft);padding-top:12px">
+      Showing <b id="selCount" style="color:var(--text)">224,699</b> of 224,699 events
+    </div>
+  </aside>
+
+  <!-- ======================= MAIN ======================= -->
+  <main class="main">
+    <section class="tiles" aria-label="Summary numbers">
+      <div class="tile"><div class="k">Events</div><div class="v" id="t_n">–</div><div class="s" id="t_n_s"></div></div>
+      <div class="tile"><div class="k">M6+ events</div><div class="v" id="t_m6">–</div><div class="s" id="t_m6_s"></div></div>
+      <div class="tile"><div class="k">Average magnitude</div><div class="v" id="t_avg">–</div><div class="s" id="t_avg_s"></div></div>
+      <div class="tile"><div class="k">Strongest event</div><div class="v" id="t_max">–</div><div class="s" id="t_max_s"></div></div>
+      <div class="tile"><div class="k">Median depth</div><div class="v" id="t_dep">–</div><div class="s" id="t_dep_s"></div></div>
+      <div class="tile"><div class="k">Share of total energy</div><div class="v" id="t_en">–</div><div class="s" id="t_en_s"></div></div>
+    </section>
+
+    <section class="viewbar" aria-label="Measure and breakdown">
+      <div class="grp"><span>Measure</span>
+        <div class="seg" id="segMeasure"></div>
+      </div>
+      <div class="grp"><span>Break down by</span>
+        <div class="seg" id="segBreak"></div>
+      </div>
+    </section>
+
+    <div class="cards">
+      <!-- map -->
+      <section class="card mapcard wide">
+        <div class="card-head">
+          <div><h3>World map — every event in the current view</h3>
+            <p class="cap">Dot size = magnitude (white ring = M7+). Drag to pan, +/− to zoom, hover for details.</p></div>
+          <div class="grp" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--muted)">COLOR</span>
+            <div class="seg" id="segColor"><button type="button" data-v="depth" aria-pressed="true">Depth</button><button type="button" data-v="mag" aria-pressed="false">Magnitude</button></div>
+          </div>
+        </div>
+        <div class="mapbox" id="mapbox"></div>
+        <div class="maptools">
+          <button class="btn primary small" id="play" type="button">▶ Play timeline</button>
+          <input type="range" id="scrub" min="0" max="1000" value="1000" aria-label="Timeline position">
+          <div class="seg" id="segMode"><button type="button" data-v="build" aria-pressed="true" title="Events accumulate over time">Build-up</button><button type="button" data-v="pulse" aria-pressed="false" title="Only recent events stay lit">Pulse</button></div>
+          <div class="seg" id="segSpeed"><button type="button" data-v="0.5" aria-pressed="false">0.5×</button><button type="button" data-v="1" aria-pressed="true">1×</button><button type="button" data-v="2" aria-pressed="false">2×</button><button type="button" data-v="4" aria-pressed="false">4×</button></div>
+          <div class="legend" id="mapLegend"></div>
+        </div>
+      </section>
+
+      <section class="card wide">
+        <div class="card-head"><div><h3 id="timeTitle"></h3><p class="cap" id="timeCap">Drag across the chart to filter by years.</p></div><div class="legend" id="timeLegend"></div></div>
+        <div class="chart" id="chTime"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><div><h3 id="rankTitle"></h3><p class="cap" id="rankCap">Click a bar to filter to it.</p></div></div>
+        <div class="chart tall" id="chRank"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><div><h3>Magnitude distribution</h3><p class="cap">Events per 0.1 magnitude step (log scale).</p></div></div>
+        <div class="chart tall" id="chHist"></div>
+      </section>
+
+      <section class="card wide">
+        <div class="card-head"><div><h3>Magnitude vs. depth density</h3><p class="cap">Events per cell (log colour scale). Many events sit at USGS default depths (10, 33, 35 km) — see notes below.</p></div></div>
+        <div class="chart tall" id="chHeat"></div>
+      </section>
+
+      <!-- table -->
+      <section class="card wide">
+        <div class="card-head">
+          <div><h3>Data table — current view</h3><p class="cap" id="tblCap"></p></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div class="seg" id="segTbl"><button type="button" data-v="events" aria-pressed="true">Events</button><button type="button" data-v="summary" aria-pressed="false">Summary by breakdown</button></div><button class="btn small" id="csv" type="button">⬇ Download this table (CSV)</button></div>
+        </div>
+        <div class="tablewrap"><table class="data" id="tbl"><thead></thead><tbody></tbody></table></div>
+        <div class="pager" id="pager"><button class="btn small" id="prev" type="button">← Prev</button><button class="btn small" id="next" type="button">Next →</button><span id="pageInfo"></span><span class="spacer"></span><span>Click a column heading to sort</span></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h3 style="color:var(--text)">Notes on reading this dashboard</h3>
+      <ul class="foot-notes">
+        <li><b>Source:</b> USGS ComCat earthquake catalog, M4.5+ earthquakes 1990–2025 (non-earthquake events removed), pulled <span id="pulled"></span>. Times are UTC.</li>
+        <li><b>Tsunami flag:</b> USGS flags whether an earthquake <i>may have generated a tsunami</i>; it is not a measured tsunami. The field is only populated from 2013 onward — every earlier event reads “not flagged”, including 2004 Sumatra and 2011 Tohoku.</li>
+        <li><b>Depth:</b> about 46% of events have a USGS default depth of exactly 10, 33 or 35 km (depth could not be resolved), so depth-class shares are approximate.</li>
+        <li><b>Country / region</b> comes from USGS place text and Natural Earth names, not official borders; it mixes countries, territories and ocean features (e.g. Mid-Atlantic Ridge). Regions below 500 events are pooled as “All other regions”.</li>
+        <li><b>Energy</b> is derived from magnitude (log₁₀E = 1.5M + 4.8, joules) and is dominated by a few huge events; averages of magnitude mix mb and Mw scales. <b>Significance</b> is a USGS composite score that correlates 0.88 with magnitude.</li>
+        <li>Averages and “average” rankings hide categories with fewer than 5 events. Event counts before ~2004 are lower partly because of catalog and reporting changes, not only real activity.</li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<div class="map-tip" id="mapTip"></div>
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="vendor/echarts.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
