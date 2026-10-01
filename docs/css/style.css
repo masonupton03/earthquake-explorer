@@ -308,3 +308,15 @@ table.data td.r, table.data th.r { text-align: right; }
 @media (max-width: 560px) { .insight { flex-wrap: wrap; gap: 4px 10px; } .ins-text { flex-basis: 100%; order: 3; } .ins-next { margin-left: auto; } }
 @media (prefers-reduced-motion: reduce) { .ins-text, .topq-item { transition: none; } }
 .ins-scope { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+/* summary tiles: show the full number. Size the value from the tile's own width (container query) so it never needs an ellipsis. */
+.tile { container-type: inline-size; }
+.tile .v { overflow: visible; text-overflow: clip; }
+@supports (font-size: 1cqi) { .tile .v { font-size: clamp(18px, 20cqi, 28px); } }
+.tile { display: flex; flex-direction: column; }
+.tile .k { flex: 1 0 auto; }   /* labels may wrap in narrow tiles; this keeps the numbers on one line across the row */
+/* Cramped tiles (six across on wide screens, two across on phones): let the line under the number wrap (max 2 lines) instead of cutting numbers
+   like "of all 224,699", and reserve both lines so the big numbers stay level across a row. */
+@media (min-width: 1500px), (max-width: 560px) {
+  .tile .s { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.35; min-height: 2.7em; }
+}
