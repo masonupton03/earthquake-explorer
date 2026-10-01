@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earthquake Explorer · 36 years of M4.5+ earthquakes</title>
+<meta name="description" content="A data report on 224,699 magnitude 4.5+ earthquakes from the USGS catalog, 1990–2025: where they strike, how big they get, and how a few giants dominate seismic energy.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2710%27 fill=%27%23d95926%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="loading" id="loading"><div><div class="spinner"></div><div>Loading 224,699 earthquakes…</div></div></div>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="pulse"></span>Earthquake Explorer</a>
+    <a class="link active" href="index.html">Report</a>
+    <a class="link" href="dashboard.html">Dashboard</a>
+    <span class="spacer"></span>
+    <a class="btn primary small" href="dashboard.html">Open the dashboard →</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-map" id="heroMap"></div>
+  <div class="hero-copy">
+    <div class="wrap">
+      <div class="kicker">USGS earthquake catalog · 1990–2025</div>
+      <h1>Thirty-six years of a shaking planet</h1>
+      <p class="lead">Every magnitude 4.5+ earthquake since 1990 — where they strike, how big they get, and how a handful of giants dominate the energy budget.</p>
+      <div class="hero-ctl">
+        <a class="btn primary" href="dashboard.html">Explore the dashboard →</a>
+        <button class="btn" id="replay" type="button">↻ Replay timeline</button>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="byline">By <b>Mason Upton</b> · Financial Data Analytics · Data Website Project</div>
+  <p class="summary">This report covers <b data-s="quality.rows" data-f="int"></b> earthquakes of magnitude 4.5 or larger recorded in the USGS catalog from 1990 to 2025, grouped into <b data-s="f3_concentration.n_regions" data-f="int"></b> countries and regions. Annual counts swing by about 2.5×, partly because of catalog changes. Large earthquakes are rare (<b data-s="f2_magnitude.m6plus_share"></b>% are M6+) and activity is concentrated: <b data-s="f3_concentration.regions_for_50pct"></b> regions account for half of all events. Counts and energy tell different stories — just 10 earthquakes release <b data-s="f5_pareto.top10_share"></b>% of all seismic energy. Most earthquakes are shallow (<b data-s="f6_depth.overall.Shallow (<70 km).share"></b>%), yet magnitude barely changes with depth, and the USGS tsunami flag (available 2013–2025) rises from <b data-s="f8_tsunami.rate_by_mag_class.4.5-4.9"></b>% of M4.5–4.9 events to <b data-s="f8_tsunami.rate_by_mag_class.7.0+"></b>% of M7+ events.</p>
+  <div class="hero-stats">
+    <div><b data-s="quality.rows" data-f="int"></b><span>earthquakes (M4.5+)</span></div>
+    <div><b>36</b><span>years, 1990–2025</span></div>
+    <div><b data-s="f3_concentration.n_regions" data-f="int"></b><span>countries &amp; regions</span></div>
+    <div><b data-s="f2_magnitude.m7plus" data-f="int"></b><span>M7+ earthquakes</span></div>
+    <div><b><span data-s="f5_pareto.top10_share"></span>%</b><span>of all energy in just 10 events</span></div>
+  </div>
+</div>
+
+<main>
+<!-- ============================== 1 ============================== -->
+<section class="section" id="f1"><div class="wrap">
+  <div class="num">FINDING 01</div>
+  <h2>Earthquake activity varies considerably from year to year.</h2>
+  <p class="sub">The number of M4.5+ earthquakes recorded each year ranges from <b data-s="f1_yearly.min" data-f="int"></b> (<span data-s="f1_yearly.min_year" data-f="raw"></span>) to <b data-s="f1_yearly.max" data-f="int"></b> (<span data-s="f1_yearly.max_year" data-f="raw"></span>) — a <span data-s="f1_yearly.max_over_min"></span>× spread.</p>
+  <div class="callouts">
+    <div class="callout"><b data-s="f1_yearly.mean" data-f="int"></b><span>average events per year</span></div>
+    <div class="callout"><b><span data-s="f1_yearly.cv" data-f="pct0"></span></b><span>year-to-year variation (CV) in all events</span></div>
+    <div class="callout"><b><span data-s="f1_yearly.m6plus_cv" data-f="pct0"></span></b><span>variation in M6+ events — much steadier</span></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>All M4.5+ earthquakes per year</h3><p class="cap">Dashed line = 36-year mean.</p><div class="chart" id="c1a"></div></div>
+    <div class="card"><h3>M6+ earthquakes per year</h3><p class="cap">The largest events are detected consistently, so this is the steadier signal.</p><div class="chart" id="c1b"></div></div>
+  </div>
+  <div class="takeaway">Annual totals swing by about <b>2.5×</b>, but part of that is the catalog, not the planet. Counts jump after 2003 (average <b data-s="f1_yearly.avg_1990_2003" data-f="int"></b> a year before, <b data-s="f1_yearly.avg_2004_2025" data-f="int"></b> after), likely helped by improved detection and reporting. Real bursts matter too: Japan logged <b data-s="f1_yearly.context.japan_2011" data-f="int"></b> events in 2011 (Tohoku and its aftershocks; its usual year is about <span data-s="f1_yearly.context.japan_avg_per_year" data-f="int"></span>), and Indonesia <b data-s="f1_yearly.context.indonesia_2005" data-f="int"></b> in 2005 after the 2004 Sumatra–Andaman sequence.</div>
+</div></section>
+
+<!-- ============================== 2 ============================== -->
+<section class="section" id="f2"><div class="wrap">
+  <div class="num">FINDING 02</div>
+  <h2>Large earthquakes are rare compared with M4.5–5.9 earthquakes.</h2>
+  <p class="sub">Nearly all recorded earthquakes are modest. Only <b><span data-s="f2_magnitude.m6plus_share"></span>%</b> reach M6, and just <b><span data-s="f2_magnitude.share.7.0+"></span>%</b> reach M7.</p>
+  <div class="callouts">
+    <div class="callout"><b><span data-s="f2_magnitude.m6plus" data-f="int"></span></b><span>M6+ earthquakes (about <span data-s="f2_magnitude.m6plus_per_year" data-f="int"></span> a year)</span></div>
+    <div class="callout"><b data-s="f2_magnitude.m7plus" data-f="int"></b><span>M7+ earthquakes (about <span data-s="f2_magnitude.m7plus_per_year" data-f="int"></span> a year)</span></div>
+    <div class="callout"><b data-s="f2_magnitude.m8plus" data-f="int"></b><span>M8+ earthquakes in 36 years</span></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Earthquakes by magnitude class</h3><p class="cap">Count and share of all 224,699 events (bar length on a log scale).</p><div class="chart" id="c2a"></div></div>
+    <div class="card"><h3>Events per 0.1 magnitude step</h3><p class="cap">Log scale — each step up is a steep drop in frequency.</p><div class="chart" id="c2b"></div></div>
+  </div>
+  <div class="takeaway">For every M7+ earthquake there are roughly <b data-s="f2_magnitude.ratio_small_to_m7" data-f="int"></b> quakes below M6. Counts fall by a factor of about <b>12</b> for each full magnitude unit (Gutenberg–Richter b-value ≈ <span data-s="f2_magnitude.b_value"></span>) — a very typical value for global seismicity.</div>
+</div></section>
+
+<!-- ============================== 3 ============================== -->
+<section class="section" id="f3"><div class="wrap">
+  <div class="num">FINDING 03</div>
+  <h2>Earthquakes are heavily concentrated in certain countries and regions.</h2>
+  <p class="sub">Out of <span data-s="f3_concentration.n_regions" data-f="int"></span> countries and regions, a handful along the Pacific “Ring of Fire” account for most activity.</p>
+  <div class="callouts">
+    <div class="callout"><b><span data-s="f3_concentration.top5_share"></span>%</b><span>of events in the top 5 regions</span></div>
+    <div class="callout"><b data-s="f3_concentration.regions_for_50pct"></b><span>regions account for half of all events</span></div>
+    <div class="callout"><b data-s="f3_concentration.regions_for_80pct"></b><span>regions account for 80%</span></div>
+    <div class="callout"><b data-s="f3_concentration.regions_with_under_100"></b><span>regions have fewer than 100 events</span></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Top 15 countries / regions by event count</h3><p class="cap">Label = share of all events.</p><div class="chart tall" id="c3a"></div></div>
+    <div class="card"><h3>Share of events by macro-region</h3><p class="cap">Continents (events on land or within 300 km of a coast) and ocean basins.</p><div class="chart tall" id="c3b"></div></div>
+  </div>
+  <div class="takeaway">Indonesia alone has <b><span data-s="f3_concentration.top15.0.share"></span>%</b> of all events and Japan <b><span data-s="f3_concentration.top15.1.share"></span>%</b>. Asia and Oceania together hold about <b>62%</b>. Regions are taken from USGS place names and mix countries, territories and ocean features (such as the Mid-Atlantic Ridge) — see the method notes.</div>
+</div></section>
+
+<!-- ============================== 4 ============================== -->
+<section class="section" id="f4"><div class="wrap">
+  <div class="num">FINDING 04</div>
+  <h2>The regions with the most earthquakes aren’t necessarily the regions releasing the most seismic energy.</h2>
+  <p class="sub">Event count and energy are related (rank correlation <b data-s="f4_energy.spearman_events_vs_energy_regions100"></b> across <span data-s="f4_energy.regions_in_correlation"></span> regions with 100+ events) but far from identical.</p>
+  <div class="grid2" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)">
+    <div class="card"><h3>Share of events vs. share of energy — top 15 regions by energy</h3><p class="cap">Where the orange bar is longer than the blue, a region releases more energy than its event count suggests.</p><div class="chart tall" id="c4a"></div></div>
+    <div class="card"><h3>Rank by events vs. rank by energy</h3><p class="cap">Top 15 regions by energy.</p>
+      <div class="scroll-y"><table class="simple" id="t4"><thead><tr><th>Region</th><th class="r">Events rank</th><th class="r">Energy rank</th><th class="r">Energy share</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+  <div class="takeaway">Only <b data-s="f4_energy.top10_count_set_in_top10_energy"></b> of the 10 busiest regions are also in the top 10 for energy. The <b>Philippines</b> is 4th for event count but 12th for energy, and <b>Tonga</b> 5th but 14th; <b>Peru</b> (17th by count) is 7th for energy and <b>Mexico</b> (18th) is 9th. <b>Russia</b> (Kamchatka and the Kurils) has <b><span data-s="f3_concentration.top15.5.share"></span>%</b> of events but <b><span data-s="f4_energy.top15_by_energy.2.energy_share"></span>%</b> of energy, while mid-ocean ridges produce many events with little energy each.</div>
+</div></section>
+
+<!-- ============================== 5 ============================== -->
+<section class="section" id="f5"><div class="wrap">
+  <div class="num">FINDING 05</div>
+  <h2>A small number of massive earthquakes account for a large share of total seismic energy.</h2>
+  <p class="sub">Energy grows about 32× per magnitude unit, so the biggest events swamp everything else.</p>
+  <div class="callouts">
+    <div class="callout"><b><span data-s="f5_pareto.top1_share"></span>%</b><span>of all energy in the single largest event (M9.1, 2004 Sumatra)</span></div>
+    <div class="callout"><b><span data-s="f5_pareto.top10_share"></span>%</b><span>in the 10 largest events</span></div>
+    <div class="callout"><b><span data-s="f5_pareto.m7plus_energy_share"></span>%</b><span>in the 541 M7+ events (0.24% of events)</span></div>
+    <div class="callout"><b><span data-s="f5_pareto.m45_59_energy_share"></span>%</b><span>in the 219,295 events below M6</span></div>
+  </div>
+  <div class="grid2" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)">
+    <div class="card"><h3>Cumulative share of total energy</h3><p class="cap">Events ranked from largest to smallest (log x-axis).</p><div class="chart tall" id="c5a"></div></div>
+    <div class="card"><h3>The 10 largest earthquakes</h3><p class="cap">Share of all energy released 1990–2025.</p>
+      <div class="scroll-y"><table class="simple" id="t5"><thead><tr><th>Date</th><th class="r">Mag</th><th>Region</th><th class="r">Share</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+  <div class="takeaway">Just <b data-s="f5_pareto.events_for_50pct"></b> earthquakes release half of all the energy, and <b data-s="f5_pareto.events_for_90pct" data-f="int"></b> (0.2% of events) release 90%. Energy here is derived from magnitude (log₁₀E = 1.5M + 4.8 joules), so it is a model estimate, not a measurement.</div>
+</div></section>
+
+<!-- ============================== 6 ============================== -->
+<section class="section" id="f6"><div class="wrap">
+  <div class="num">FINDING 06</div>
+  <h2>Most recorded earthquakes are shallow, but depth patterns vary by region.</h2>
+  <p class="sub"><b><span data-s="f6_depth.overall.Shallow (<70 km).share"></span>%</b> of events are shallow (under 70 km) and the median depth is <b><span data-s="f6_depth.median_depth"></span> km</b> — but subduction zones tell a different story.</p>
+  <div class="callouts">
+    <div class="callout"><b><span data-s="f6_depth.overall.Shallow (<70 km).share"></span>%</b><span>shallow (&lt; 70 km)</span></div>
+    <div class="callout"><b><span data-s="f6_depth.overall.Intermediate (70-300 km).share"></span>%</b><span>intermediate (70–300 km)</span></div>
+    <div class="callout"><b><span data-s="f6_depth.overall.Deep (>300 km).share"></span>%</b><span>deep (&gt; 300 km)</span></div>
+  </div>
+  <div class="grid2" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)">
+    <div class="card"><h3>Depth mix by country / region</h3><p class="cap">The 20 most active regions, sorted by share of shallow events.</p><div class="chart tall" id="c6a" style="height:560px"></div></div>
+    <div class="card"><h3>Depth mix by macro-region</h3><p class="cap">Share of events in each depth class.</p><div class="chart tall" id="c6b" style="height:560px"></div></div>
+  </div>
+  <div class="takeaway">Fiji’s events are <b><span data-s="f6_depth.regions_1000plus.0.deep"></span>%</b> deep (median depth <span data-s="f6_depth.regions_1000plus.0.median_depth" data-f="int"></span> km) because of the Tonga–Fiji slab, and Argentina and Afghanistan are mostly intermediate-depth. Mid-ocean ridges, Africa and the Indian Ocean are almost entirely shallow. <b>Caveat:</b> about <span data-s="quality.depth_exactly_10_33_or_35km_pct"></span>% of events have a USGS default depth of exactly 10, 33 or 35 km (the depth could not be resolved), so shallow shares and the median depth are approximate; the regional contrasts are large enough to survive this.</div>
+</div></section>
+
+<!-- ============================== 7 ============================== -->
+<section class="section" id="f7"><div class="wrap">
+  <div class="num">FINDING 07</div>
+  <h2>Earthquake magnitude varies very little with depth.</h2>
+  <p class="sub">Magnitude and depth are nearly independent (rank correlation <b data-s="f7_mag_depth.spearman_mag_depth"></b>), but the density plot shows distinct depth structures — and deep events are slightly more likely to be M6+.</p>
+  <div class="grid2" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)">
+    <div class="card"><h3>Magnitude vs. depth — event density</h3><p class="cap">Each cell counts events (log colour scale). Cells at ~10 km are inflated by USGS default depths.</p><div class="chart tall" id="c7a"></div></div>
+    <div class="card"><h3>Share of events that are M6+, by depth band</h3><p class="cap">Depth bands in km. Mean magnitude is 4.79–4.86 in every band.</p><div class="chart tall" id="c7b"></div></div>
+  </div>
+  <div class="takeaway">Average magnitude barely changes with depth (<span data-s="f7_mag_depth.by_depth_band.0.mean_mag"></span> at 0–35 km vs <span data-s="f7_mag_depth.by_depth_band.5.mean_mag"></span> below 500 km). The one visible difference is the share of M6+ events: <b><span data-s="f7_mag_depth.by_depth_band.0.pct_m6plus"></span>%</b> of shallow (0–35 km) events versus <b><span data-s="f7_mag_depth.by_depth_band.5.pct_m6plus"></span>–<span data-s="f7_mag_depth.by_depth_band.4.pct_m6plus"></span>%</b> deeper than 300 km, and the 35–150 km bands are lowest. Still, <b><span data-s="f7_mag_depth.pct_m7plus_shallow"></span>%</b> of M7+ earthquakes are shallow, simply because most earthquakes are. The density plot’s structure reflects tectonics (shallow ridges and faults, subducting slabs reaching 700 km), not a magnitude–depth law.</div>
+</div></section>
+
+<!-- ============================== 8 ============================== -->
+<section class="section" id="f8"><div class="wrap">
+  <div class="num">FINDING 08</div>
+  <h2>Tsunami-flagged earthquakes are concentrated among larger earthquakes; depth matters much less.</h2>
+  <p class="sub">Among <span data-s="f8_tsunami.events_in_scope" data-f="int"></span> earthquakes from <span data-s="f8_tsunami.flag_start_year" data-f="raw"></span>–2025, the chance of a tsunami flag climbs steeply with magnitude. Most flagged events are shallow, but that is true of most earthquakes. The USGS <code>tsunami</code> field flags events that <i>may have generated a tsunami</i> — it is not a measured tsunami — and it is populated only from <b data-s="f8_tsunami.flag_start_year" data-f="raw"></b> onward (every earlier event reads “not flagged”, even 2004 Sumatra and 2011 Tohoku), so this analysis uses 2013–2025 only.</p>
+  <div class="callouts">
+    <div class="callout"><b data-s="f8_tsunami.flagged" data-f="int"></b><span>flagged events, 2013–2025 (<span data-s="f8_tsunami.flagged_share_of_scope"></span>% of events)</span></div>
+    <div class="callout"><b><span data-s="f8_tsunami.rate_by_mag_class.7.0+"></span>%</b><span>of M7+ events are flagged</span></div>
+    <div class="callout"><b><span data-s="f8_tsunami.rate_by_mag_class.4.5-4.9"></span>%</b><span>of M4.5–4.9 events are flagged</span></div>
+    <div class="callout"><b><span data-s="f8_tsunami.pct_flagged_m6plus"></span>%</b><span>of flagged events are M6+ (vs <span data-s="f8_tsunami.pct_scope_m6plus"></span>% of all)</span></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Share of events flagged, by magnitude class</h3><p class="cap">2013–2025 only.</p><div class="chart" id="c8a"></div></div>
+    <div class="card"><h3>Share of events flagged, by depth class</h3><p class="cap">2013–2025 only. Note the much smaller range.</p><div class="chart" id="c8b"></div></div>
+  </div>
+  <div class="takeaway">The flag rate rises from <b><span data-s="f8_tsunami.rate_by_mag_class.4.5-4.9"></span>%</b> for M4.5–4.9 to <b><span data-s="f8_tsunami.rate_by_mag_class.7.0+"></span>%</b> for M7+, and flagged events have a median magnitude of <b><span data-s="f8_tsunami.median_mag_flagged"></span></b> versus <b><span data-s="f8_tsunami.median_mag_unflagged"></span></b>. By depth the pattern is weak: <b><span data-s="f8_tsunami.pct_flagged_shallow"></span>%</b> of flagged events are shallow, against <b><span data-s="f8_tsunami.pct_scope_shallow"></span>%</b> of all events, and among M7+ events the flag rate is similar at every depth.</div>
+</div></section>
+
+<!-- ============================== METHODS ============================== -->
+<section class="section methods" id="methods"><div class="wrap">
+  <div class="num">METHOD &amp; CAVEATS</div>
+  <h2>How the data was built — and what to keep in mind</h2>
+  <p class="sub">Everything on this site comes from one reproducible Python pipeline (<code>scripts/</code>) and a single USGS query.</p>
+  <ul>
+    <li><b>Source:</b> USGS ComCat earthquake catalog, FDSN web service (<code>earthquake.usgs.gov/fdsnws/event/1</code>), <code>minmagnitude=4.5</code>, 1 Jan 1990 – 31 Dec 2025 UTC, pulled <span data-s="meta.pulled"></span>. The catalog is revised over time, so numbers can drift slightly on a re-pull.</li>
+    <li><b>What one row is:</b> one earthquake (event data). Each row has the time it happened (<code>time_utc</code>, analysed by year — 36 periods) and the country/region it belongs to (<code>country_region</code>, the group column — <span data-s="f3_concentration.n_regions"></span> values), plus location, depth, magnitude, magnitude type, USGS significance and tsunami flag. There are <b data-s="quality.rows" data-f="int"></b> rows and <span data-s="quality.columns"></span> columns.</li>
+    <li><b>Rows dropped:</b> <span data-s="meta.raw" data-f="int"></span> events were downloaded; <b>125</b> were removed — 124 events that are not earthquakes (volcanic and nuclear explosions, mine collapses, rock bursts, landslides) and 1 event later revised below M4.5 — leaving <b data-s="quality.rows" data-f="int"></b>. Nothing else is dropped or imputed; 62 slightly negative depths were set to 0.</li>
+    <li><b>Country / region group:</b> the text after the last comma in USGS’s <code>place</code> field (78% of events), matched to Natural Earth country names and US states; places with no country (e.g. “south of the Fiji Islands”) use the named feature, and the few named events (e.g. “2010 Maule, Chile”) fall back to a Natural Earth polygon lookup. It is a mix of countries, territories (Guam and the Northern Mariana Islands are separate) and ocean features, not an official political boundary. The <span data-s="group_table.rows.length"></span> regions with 500+ events are listed below; the dashboard pools the rest as “All other regions”. <b>Macro-region:</b> Natural Earth continent for events on land or within 300 km of a coast, else the ocean basin (Russia east of 60°E counts as Asia).</li>
+    <li><b>Depth and magnitude classes:</b> shallow &lt; 70 km, intermediate 70–300 km, deep &gt; 300 km; magnitude classes 4.5–4.9, 5.0–5.9, 6.0–6.9, 7.0+. About <span data-s="quality.depth_exactly_10_33_or_35km_pct"></span>% of depths are USGS default values (10, 33, 35 km). <span data-s="quality.mag_type_group.mb" data-f="int"></span> events use mb magnitudes, <span data-s="quality.mag_type_group.Mw" data-f="int"></span> the Mw family and <span data-s="quality.mag_type_group.Other" data-f="int"></span> others, so average magnitude mixes scales; it drifts from <span data-s="quality.mean_mag_by_period.1990-1999"></span> (1990s) to <span data-s="quality.mean_mag_by_period.2020-2025"></span> (2020s) as more small events are recorded.</li>
+    <li><b>Catalog changes:</b> counts before about 2004 are lower partly because of changes in detection and reporting, so long-run trends in small-event counts should not be read as pure changes in Earth’s activity.</li>
+  </ul>
+  <h3 style="margin:26px 0 8px;font-size:18px">How every rate, ratio and average is computed</h3>
+  <ul>
+    <li><b>Counts and shares:</b> a share is the number of events in a category ÷ the number of events in the whole set (224,699, unless the text says otherwise) × 100. “Per year” figures divide by the 36 years.</li>
+    <li><b>Year-to-year variation (CV):</b> the sample standard deviation of the 36 annual counts ÷ their mean (finding 1; M6+ counts use the same formula).</li>
+    <li><b>Seismic energy:</b> each event’s energy is E = 10<sup>1.5·M + 4.8</sup> joules (the standard magnitude–energy relation). A region’s energy share = the sum of E over its events ÷ the sum over all events; the “cumulative share” ranks events from largest to smallest E (findings 4 and 5). It is an estimate derived from magnitude, not a measurement.</li>
+    <li><b>Gutenberg–Richter b-value:</b> b = log<sub>10</sub>(e) ÷ (mean magnitude − 4.45), the Aki maximum-likelihood estimate for 0.1-magnitude bins with a 4.5 cut-off. “Fewer by a factor of about 12 per magnitude unit” is 10<sup>b</sup> (finding 2).</li>
+    <li><b>Rank correlation:</b> Spearman’s ρ between each region’s event count and its energy across the <span data-s="f4_energy.regions_in_correlation"></span> regions with 100+ events (finding 4); and between magnitude and depth across all events (finding 7). Rank = position when sorted from largest to smallest.</li>
+    <li><b>Depth:</b> shares are events in a depth class ÷ events in the group shown; the median depth is the middle value of <code>depth_km</code>. In finding 7, the “share M6+” of a depth band = events with M ≥ 6 in that band ÷ all events in that band.</li>
+    <li><b>Tsunami flag rate:</b> flagged events ÷ all events in the magnitude or depth class, using 2013–2025 events only (finding 8). The USGS flag means “may have generated a tsunami”, not a measured tsunami.</li>
+    <li><b>Dashboard:</b> uses exactly the same definitions, calculated in the browser from the same data: the averages, maximum and totals are over the filtered events; “share of total energy” = energy of the events in view ÷ energy of all 224,699 events; the median uses the middle value of the filtered events; the Summary table lists the numbers behind the charts. Average significance is a USGS composite score that correlates <span data-s="quality.sig_corr_with_mag"></span> with magnitude. Felt-report fields were left out because they are mostly missing.</li>
+  </ul>
+  <details class="box"><summary>Group table — the 61 regions with 500+ events</summary>
+    <div class="scroll-y" style="max-height:480px"><table class="simple" id="tGroups"><thead><tr><th>Region</th><th>Macro-region</th><th class="r">Events</th><th class="r">% events</th><th class="r">% energy</th><th class="r">Median depth</th><th class="r">Max mag</th><th class="r">Rank: events</th><th class="r">Rank: energy</th></tr></thead><tbody></tbody></table></div>
+  </details>
+</div></section>
+</main>
+
+<footer><div class="wrap">Data: U.S. Geological Survey ComCat earthquake catalog (public domain). Country outlines: Natural Earth. Built for a Financial Data Analytics class project · static site, no backend.</div></footer>
+
+<div class="map-tip" id="mapTip"></div>
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="vendor/echarts.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/report.js"></script>
+</body>
+</html>
