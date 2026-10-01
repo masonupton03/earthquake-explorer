@@ -21,8 +21,11 @@
       }
       if (opts.zoom) this._initZoom();
       this._ro = new ResizeObserver(() => this.resize()); this._ro.observe(el);
+      this.pinned = -1; this._mkInfo();
       this.fx.addEventListener('mousemove', (e) => this._move(e));
-      this.fx.addEventListener('mouseleave', () => { this.hover = -1; this._drawFx(); this.onHover && this.onHover(-1); });
+      this.fx.addEventListener('mouseleave', () => { this.hover = -1; this._drawFx(); this._showTip(-1); });
+      this.fx.addEventListener('click', (e) => this._click(e));
+      window.addEventListener('keydown', (e) => { if (e.key === 'Escape') this.unpin(); });
       this.resize();
     }
 
@@ -43,7 +46,7 @@
 
     // ---- data -------------------------------------------------------------------------------
     setEvents(idx, { yearRange, colorBy } = {}) {
-      this.pause();
+      this.pause(); this.unpin();
       this.idx = idx; if (colorBy) this.colorBy = colorBy;
       if (yearRange) this.range = [(Date.UTC(yearRange[0], 0, 1) - QD.EPOCH0_MS) / 1000, (Date.UTC(yearRange[1] + 1, 0, 1) - QD.EPOCH0_MS) / 1000];
       this.showAll();
@@ -107,6 +110,11 @@
         ctx.beginPath(); ctx.arc(px, py, rad, 0, 6.2832);
         ctx.strokeStyle = `rgba(255,255,255,${0.85 * (1 - age)})`; ctx.lineWidth = 1.6 * (1 - age) + 0.4; ctx.stroke();
       }
+      if (this.pinned >= 0) {
+        const i = this.pinned, px = this.px[i] * k + x, py = this.py[i] * k + y, r = radius(this.D.mag[i], k) + 5;
+        ctx.beginPath(); ctx.arc(px, py, r, 0, 6.2832); ctx.strokeStyle = '#d95926'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.beginPath(); ctx.arc(px, py, r, 0, 6.2832); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; ctx.stroke();
+      }
       if (this.hover >= 0) {
         const i = this.hover, px = this.px[i] * k + x, py = this.py[i] * k + y;
         ctx.beginPath(); ctx.arc(px, py, radius(this.D.mag[i], k) + 4, 0, 6.2832); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
@@ -135,12 +143,15 @@
     _progress(fromSeek) { this.onProgress && this.onProgress((this.simT - this.range[0]) / (this.range[1] - this.range[0] || 1), this.playing, fromSeek); }
 
     play() {
-      if (!this.idx.length) return;
+      if (!this.idx.length || this.playing) return;
       if (this.cursor >= this.idx.length || this.simT >= this.range[1]) { this.simT = this.range[0]; this.cursor = 0; this.rings = []; this._drawDotsTo(0); }
       this.playing = true; this._last = performance.now();
       const spanYears = (this.range[1] - this.range[0]) / 31557600;
       this._rate = (this.range[1] - this.range[0]) / Math.min(26, Math.max(6, spanYears * 0.75));    // sim seconds per real second at 1x
       cancelAnimationFrame(this._raf); this._raf = requestAnimationFrame((t) => this._tick(t)); this._progress();
+    }
+    restart() {                                              // always begins again from the first year, even mid-animation
+      this.pause(); this.simT = this.range[0]; this.cursor = 0; this.rings = []; this._drawDotsTo(0); this.hover = -1; this.unpin(); this.play();
     }
     pause() { this.playing = false; cancelAnimationFrame(this._raf); this._progress(); }
     toggle() { this.playing ? this.pause() : this.play(); }
@@ -166,21 +177,63 @@
     }
 
     // ---- hover / zoom ----------------------------------------------------------------------------------------
+    // nearest drawn event to a pointer position (px = CSS pixels inside the map), or -1
+    _hit(mx, my, tol) {
+      const { k, x, y } = this.tf, D = this.D, idx = this.idx; let best = -1, bd = 1e9;
+      for (let j = 0; j < this.cursor; j++) {
+        const i = idx[j], dx = this.px[i] * k + x - mx; if (dx > tol || dx < -tol) continue;
+        const dy = this.py[i] * k + y - my; if (dy > tol || dy < -tol) continue;
+        const d = dx * dx + dy * dy - D.mag[i] * 3; if (d < bd) { bd = d; best = i; }
+      }
+      return bd > tol * tol + 20 ? -1 : best;
+    }
+    _local(e) { const r = this.fx.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
     _move(e) {
+      if (!this._warm) { this._warm = true; QD.loadDetails(this.D).then(() => { if (this.hover >= 0) this._showTip(this.hover, this._lx, this._ly); if (this.pinned >= 0) this._card(this.pinned); }); }
+      const [mx, my] = this._local(e); this._lx = mx; this._ly = my;
       if (this._raf2) return;
       this._raf2 = requestAnimationFrame(() => {
-        this._raf2 = 0; const r = this.fx.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-        const { k, x, y } = this.tf, D = this.D, idx = this.idx; let best = -1, bd = 1e9;
-        for (let j = 0; j < this.cursor; j++) {
-          const i = idx[j], dx = this.px[i] * k + x - mx; if (dx > 9 || dx < -9) continue;
-          const dy = this.py[i] * k + y - my; if (dy > 9 || dy < -9) continue;
-          const d = dx * dx + dy * dy - D.mag[i] * 3; if (d < bd) { bd = d; best = i; }
-        }
-        if (bd > 100) best = -1;
-        if (best !== this.hover) { this.hover = best; this._drawFx(); }
-        this.onHover && this.onHover(best, e.clientX, e.clientY);
+        this._raf2 = 0; const i = this._hit(this._lx, this._ly, 9);
+        if (i !== this.hover) { this.hover = i; this._drawFx(); }
+        this.fx.style.cursor = i >= 0 ? 'pointer' : '';
+        this._showTip(i, this._lx, this._ly);
       });
     }
+    _click(e) {
+      const [mx, my] = this._local(e), i = this._hit(mx, my, 14);
+      if (i >= 0) this.pin(i); else this.unpin();
+    }
+
+    // ---- event information: hover tooltip + click-to-pin card (shared by both pages) ----------------
+    _mkInfo() {
+      this.tip = document.createElement('div'); this.tip.className = 'qtip'; this.el.appendChild(this.tip);
+      this.card = document.createElement('div'); this.card.className = 'qcard'; this.el.appendChild(this.card);
+      this.card.addEventListener('click', (e) => { if (e.target.closest('.x')) this.unpin(); e.stopPropagation(); });
+    }
+    _info(i) {
+      const D = this.D, det = D.details, esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const region = det ? det.rf_names[det.rf[i]] : D.meta.regions[D.raw_region[i]];
+      return { title: `M${QD.fmtNum(D.mag[i], D.raw_mag[i] % 10 ? 2 : 1)} · ${QD.fmtNum(D.depth[i], 1)} km deep`, place: det ? esc(det.place[i]) : esc(region), time: QD.fmtTime(D, i) + ' UTC',
+        region: esc(region), type: QD.MTYPE_LABELS[D.raw_mtype[i]], url: det ? `https://earthquake.usgs.gov/earthquakes/eventpage/${det.id[i]}` : null };
+    }
+    _showTip(i, mx, my) {
+      const t = this.tip;
+      if (i < 0 || i === this.pinned) { t.style.display = 'none'; return; }
+      const f = this._info(i);
+      t.innerHTML = `<b>${f.title}</b><span>${f.place}</span><span>${f.time}</span><em>Click for details</em>`;
+      t.style.display = 'block';
+      const tw = t.offsetWidth, th = t.offsetHeight;
+      t.style.left = Math.max(6, Math.min(mx + 14, this.w - tw - 6)) + 'px';
+      t.style.top = (my + 16 + th > this.h ? Math.max(6, my - th - 12) : my + 16) + 'px';
+    }
+    _card(i) {
+      const f = this._info(i), c = this.card;
+      c.innerHTML = `<button type="button" class="x" aria-label="Close">×</button><b>${f.title}</b><span>${f.place}</span><span>${f.time}</span><span>${f.region} · ${f.type}</span>` +
+        (f.url ? `<a href="${f.url}" target="_blank" rel="noopener">Open USGS event page ↗</a>` : '<em>Loading event details…</em>');
+      c.style.display = 'block';
+    }
+    pin(i) { this.pinned = i; this.hover = -1; this._showTip(-1); this._card(i); this._drawFx(); QD.loadDetails(this.D).then(() => { if (this.pinned === i) this._card(i); }); }
+    unpin() { if (this.pinned < 0 && this.card.style.display !== 'block') return; this.pinned = -1; this.card.style.display = 'none'; this._drawFx(); }
 
     _initZoom() {
       const z = document.createElement('div'); z.className = 'zoom';

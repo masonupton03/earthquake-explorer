@@ -80,12 +80,17 @@ button, select, input { font: inherit; color: inherit; }
 .qmap .zoom { position: absolute; left: 12px; top: 12px; display: flex; flex-direction: column; gap: 4px; }
 .qmap .zoom button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: rgba(18,22,32,.85); cursor: pointer; font-size: 16px; line-height: 1; }
 .qmap .zoom button:hover { background: #1d2433; }
-.map-tip {
-  position: fixed; z-index: 100; pointer-events: none; background: rgba(12, 15, 22, .96); border: 1px solid #34405a;
-  padding: 8px 11px; border-radius: 9px; font-size: 12.5px; max-width: 280px; box-shadow: var(--shadow); display: none;
-}
-.map-tip b { display: block; font-size: 14px; margin-bottom: 2px; }
-.map-tip span { color: var(--text-2); display: block; }
+/* in-map event tooltip (hover) and pinned card (click) */
+.qtip, .qcard { position: absolute; z-index: 5; background: rgba(12, 15, 22, .96); border: 1px solid #34405a; border-radius: 10px; box-shadow: var(--shadow); font-size: 12.5px; display: none; }
+.qtip { pointer-events: none; padding: 8px 11px; max-width: 280px; }
+.qcard { left: 12px; bottom: 12px; padding: 12px 34px 12px 14px; max-width: min(320px, calc(100% - 24px)); border-color: var(--hot); }
+.qtip b, .qcard b { display: block; font-size: 14px; margin-bottom: 2px; }
+.qtip span, .qcard span { display: block; color: var(--text-2); }
+.qtip em { display: block; margin-top: 3px; color: var(--muted); font-style: normal; font-size: 11.5px; }
+.qcard a { display: inline-block; margin-top: 7px; font-weight: 600; }
+.qcard em { display: block; margin-top: 6px; color: var(--muted); font-style: normal; }
+.qcard .x { position: absolute; right: 6px; top: 4px; width: 26px; height: 26px; border: 0; background: none; color: var(--text-2); font-size: 20px; cursor: pointer; line-height: 1; }
+.qcard .x:hover { color: #fff; }
 
 /* ---------- sections (report) ---------- */
 .section { padding: clamp(36px, 6vw, 72px) 0; border-bottom: 1px solid var(--border-soft); }
@@ -222,3 +227,48 @@ table.data td.r, table.data th.r { text-align: right; }
 .summary { max-width: 82ch; margin: 10px 0 0; color: var(--text); font-size: 16.5px; line-height: 1.65; }
 .summary b { color: #fff; }
 .methods h3 { color: var(--text); }
+
+/* ================= dashboard layout: clearly labelled sections, primary vs secondary controls ================= */
+.side-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.side-head h2 { font-size: 17px; margin: 0; display: flex; align-items: center; gap: 10px; }
+.hint { margin: 2px 0 14px; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.fg-title { margin: 18px 0 10px; padding-top: 14px; border-top: 1px solid var(--border-soft); font-size: 12.5px; font-weight: 700; color: var(--text); }
+.fg-title:first-of-type { margin-top: 6px; border-top: 0; padding-top: 0; }
+.fg-title small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+.help { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.help b { color: var(--text-2); font-weight: 600; }
+#filters > summary { display: none; list-style: none; cursor: pointer; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+#filters > summary::-webkit-details-marker { display: none; }
+.step { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--hot); color: #fff; font: 700 12px var(--font); flex: none; }
+.block { display: flex; flex-direction: column; gap: 12px; }
+.block + .block { margin-top: 14px; }
+.block-head { display: flex; gap: 12px; align-items: flex-start; }
+.block-head h2 { font-size: 19px; margin: 0; }
+.block-head p { margin: 3px 0 0; color: var(--text-2); font-size: 13.5px; max-width: 78ch; }
+.block-head .step { margin-top: 2px; }
+.selbar { margin: 0; padding: 9px 14px; border: 1px solid var(--border-soft); border-left: 3px solid var(--hot); border-radius: 0 10px 10px 0; background: var(--surface); color: var(--text-2); font-size: 13px; }
+.selbar b { color: var(--text); }
+/* primary controls: measure + breakdown */
+.viewbar { position: static; border-color: #2b3550; background: linear-gradient(180deg, #151b29, #121620); }
+.viewbar .grp > span { color: var(--text-2); }
+.seg.primary { border-color: #34405a; }
+.seg.primary button { padding: 8px 14px; font-size: 14px; color: var(--text); }
+.seg.primary button[aria-pressed="true"] { background: var(--hot); color: #fff; font-weight: 600; }
+/* secondary controls (map style / speed): quiet */
+.seg.mini { background: none; border-color: var(--border-soft); }
+.seg.mini button { padding: 3px 9px; font-size: 12px; color: var(--muted); border-right-color: var(--border-soft); }
+.seg.mini button:hover { color: var(--text); }
+.seg.mini button[aria-pressed="true"] { background: rgba(255,255,255,.07); color: var(--text); }
+.maptools { gap: 10px 16px; }
+.maptools .grp-mini { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.maptools .legend { margin-left: auto; font-size: 11.5px; }
+.card-head .cap { max-width: 70ch; }
+.qmap .zoom button { width: 26px; height: 26px; font-size: 14px; background: rgba(18,22,32,.7); color: var(--text-2); }
+.chart.mid { height: 380px; }
+.cards.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); }
+@media (min-width: 901px) { #filters { display: block; } #filters > summary { display: none !important; } }
+@media (max-width: 900px) {
+  #filters > summary { display: block; }
+  .cards.two { grid-template-columns: 1fr; }
+  .maptools .legend { margin-left: 0; }
+}

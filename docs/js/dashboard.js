@@ -55,7 +55,7 @@
   dropdown($('ddMacro'), M.macros, 'macro', tot.macro, $('macroVal'));
   chips($('chipsMag'), M.mclasses, 'mclass', COLORS.mag);
   chips($('chipsDepth'), M.dclasses, 'dclass', COLORS.depth);
-  chips($('chipsMtype'), M.mtypes, 'mtype', COLORS.mtype);
+  chips($('chipsMtype'), QD.MTYPE_LABELS, 'mtype', COLORS.mtype);
 
   const y0 = $('y0'), y1 = $('y1');
   y0.oninput = () => { if (+y0.value > +y1.value) y0.value = y1.value; state.y0 = +y0.value; schedule(); };
@@ -94,14 +94,8 @@
 
   // ===================================================================== map
   const map = new QuakeMap($('mapbox'), D, world, { zoom: true });
-  const tip = $('mapTip');
   const setSeg = (id, v) => document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v));
   const regionOf = (i) => (D.details ? D.details.rf_names[D.details.rf[i]] : M.regions[D.raw_region[i]]);
-  map.onHover = (i, x, y) => {
-    if (i < 0) { tip.style.display = 'none'; return; }
-    tip.innerHTML = `<b>M${fmtNum(D.mag[i], 1)} · ${fmtNum(D.depth[i], 1)} km deep</b><span>${D.details ? D.details.place[i] : regionOf(i)}</span><span>${fmtTime(D, i)} UTC</span>`;
-    tip.style.display = 'block'; tip.style.left = Math.min(x + 14, innerWidth - 300) + 'px'; tip.style.top = y + 14 + 'px';
-  };
   map.onProgress = (f, playing, fromSeek) => {
     $('play').textContent = playing ? '❚❚ Pause' : (f >= 0.999 ? '▶ Play timeline' : '▶ Resume');
     if (!fromSeek) $('scrub').value = Math.round(f * 1000);
@@ -248,7 +242,7 @@
   // ===================================================================== table
   const COLS = [
     { k: 'time', label: 'Time (UTC)', key: null }, { k: 'mag', label: 'Mag', r: 1, key: D.raw_mag, max: 910 }, { k: 'depth', label: 'Depth (km)', r: 1, key: D.raw_depth, max: 7100 },
-    { k: 'place', label: 'Place' }, { k: 'region', label: 'Country / region', key: D.raw_region, max: 255 }, { k: 'mtype', label: 'Type', key: D.raw_mtype, max: 3 },
+    { k: 'place', label: 'Place' }, { k: 'region', label: 'Country / region', key: D.raw_region, max: 255 }, { k: 'mtype', label: 'Magnitude type', key: D.raw_mtype, max: 3 },
     { k: 'sig', label: 'Signif.', r: 1, key: D.raw_sig, max: 3000 }, { k: 'tsu', label: 'Tsunami flag', key: D.raw_tsu, max: 1 }, { k: 'link', label: '' },
   ];
   function buildEventsHead() {
@@ -298,7 +292,7 @@
     for (let j = a; j < b; j++) {
       const i = sorted[j], y = D.year[i];
       rows.push(`<tr><td>${fmtTime(D, i)}</td><td class="r"><b>${fmtNum(D.mag[i], D.raw_mag[i] % 10 ? 2 : 1)}</b></td><td class="r">${fmtNum(D.depth[i], 1)}</td><td title="${det ? det.place[i] : ''}">${det ? det.place[i] : '<span style="color:var(--muted)">loading…</span>'}</td>` +
-        `<td>${regionOf(i)}</td><td>${M.mtypes[D.raw_mtype[i]]}</td><td class="r">${D.sig[i]}</td><td>${y < QD.FLAG_START_YEAR ? '<span style="color:var(--muted)">n/a</span>' : D.raw_tsu[i] ? 'Flagged' : 'No'}</td>` +
+        `<td>${regionOf(i)}</td><td>${QD.MTYPE_LABELS[D.raw_mtype[i]]}</td><td class="r">${D.sig[i]}</td><td>${y < QD.FLAG_START_YEAR ? '<span style="color:var(--muted)">n/a</span>' : D.raw_tsu[i] ? 'Flagged' : 'No'}</td>` +
         `<td>${det ? `<a href="https://earthquake.usgs.gov/earthquakes/eventpage/${det.id[i]}" target="_blank" rel="noopener">USGS ↗</a>` : ''}</td></tr>`);
     }
     tb.innerHTML = n ? rows.join('') : '<tr><td colspan="9" class="empty">No events match the current filters.</td></tr>';
@@ -315,13 +309,27 @@
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out.join('\n')], { type: 'text/csv' })); a.download = 'earthquakes_summary_current_view.csv'; a.click(); URL.revokeObjectURL(a.href); return;
     }
     await QD.loadDetails(D);
-    const det = D.details, q = (s) => `"${String(s).replace(/"/g, '""')}"`, out = ['id,time_utc,latitude,longitude,depth_km,magnitude,mag_type,significance,tsunami_flag_2013plus,country_region,place'];
+    const det = D.details, q = (s) => `"${String(s).replace(/"/g, '""')}"`, out = ['id,time_utc,latitude,longitude,depth_km,magnitude,magnitude_type,significance,tsunami_flag_2013plus,country_region,place'];
     for (let j = 0; j < sorted.length; j++) {
       const i = sorted[j];
-      out.push([det.id[i], fmtTime(D, i), D.lat[i], D.lon[i], D.depth[i], D.mag[i], M.mtypes[D.raw_mtype[i]], D.sig[i], D.year[i] < QD.FLAG_START_YEAR ? '' : D.raw_tsu[i], q(regionOf(i)), q(det.place[i])].join(','));
+      out.push([det.id[i], fmtTime(D, i), D.lat[i], D.lon[i], D.depth[i], D.mag[i], QD.MTYPE_LABELS[D.raw_mtype[i]], D.sig[i], D.year[i] < QD.FLAG_START_YEAR ? '' : D.raw_tsu[i], q(regionOf(i)), q(det.place[i])].join(','));
     }
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out.join('\n')], { type: 'text/csv' })); a.download = 'earthquakes_current_view.csv'; a.click(); URL.revokeObjectURL(a.href);
   };
+
+  // ===================================================================== plain-language summary of the filters
+  function describeSelection() {
+    const names = (set, arr) => [...set].sort((a, b) => a - b).map((k) => arr[k]);
+    const list = (xs, noun) => (xs.length > 3 ? `${xs.length} ${noun}` : xs.join(', '));
+    const parts = [`<b>${state.y0 === state.y1 ? state.y0 : state.y0 + '–' + state.y1}</b>`];
+    parts.push(state.region.size ? `<b>${list(names(state.region, M.regions), 'regions')}</b>` : 'all countries and regions');
+    if (state.macro.size) parts.push(`<b>${list(names(state.macro, M.macros), 'macro-regions')}</b>`);
+    if (state.mclass.size) parts.push(`magnitude <b>${list(names(state.mclass, M.mclasses), 'classes')}</b>`);
+    if (state.dclass.size) parts.push(`<b>${list(names(state.dclass, M.dclasses), 'depth classes')}</b>`);
+    if (state.mtype.size) parts.push(`<b>${list(names(state.mtype, QD.MTYPE_LABELS), 'magnitude types')}</b>`);
+    if (state.tsu !== 'all') parts.push(`tsunami flag: <b>${state.tsu === '1' ? 'flagged' : 'not flagged'}</b>`);
+    $('selSummary').innerHTML = `Showing <b>${fmtInt(idx.length)}</b> earthquakes · ` + parts.join(' · ');
+  }
 
   // ===================================================================== update loop
   let pending = 0;
@@ -330,11 +338,16 @@
   function update() {
     idx = QD.select(D, state);
     syncers.forEach((f) => f());
-    renderTiles();
+    renderTiles(); describeSelection();
     map.setEvents(idx, { yearRange: [state.y0, state.y1], colorBy: view.color }); legend();
     renderCharts(); renderHist(); renderHeat();
     sortRows(); view.page = 0; renderTable();
   }
+
+  const filtersBox = $('filters'), mobile = matchMedia('(max-width: 900px)');
+  const syncFilters = () => { if (!mobile.matches) filtersBox.open = true; };
+  if (mobile.matches) filtersBox.open = false;
+  mobile.addEventListener('change', syncFilters);
 
   update();
   $('loading').classList.add('done');

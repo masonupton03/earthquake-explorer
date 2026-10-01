@@ -11,6 +11,8 @@
     mag: ['#256abf', '#3987e5', '#86b6ef', '#cde2fb'],   // ordinal ramp: bigger = lighter on dark
     mtype: ['#9085e9', '#c98500', '#6b7686'],            // mb, Mw, other
   };
+  // Plain-language names for the magnitude-type groups (the stored codes stay mb / Mw / Other).
+  const MTYPE_LABELS = ['Body-wave magnitude (mb)', 'Moment magnitude (Mw)', 'Other magnitude types'];
   const EPOCH0_MS = Date.UTC(1990, 0, 1);
   const FLAG_START_YEAR = 2013;
 
@@ -70,7 +72,7 @@
       mag: { id: 'mag', label: 'Magnitude class', filter: 'mclass', arr: D.magClass, names: m.mclasses, K: 4, series: ident(m.mclasses, COLORS.mag) },
       region: { id: 'region', label: 'Country / region', filter: 'region', arr: D.raw_region, names: m.regions, K: m.regions.length, series: fold(m.regions, m.regions.length, 7), rankExclude: m.regions.length - 1 },
       macro: { id: 'macro', label: 'Macro-region', filter: 'macro', arr: D.raw_macro, names: m.macros, K: m.macros.length, series: fold(m.macros, m.macros.length, 7) },
-      mtype: { id: 'mtype', label: 'Magnitude type', filter: 'mtype', arr: D.raw_mtype, names: m.mtypes, K: 3, series: ident(m.mtypes, COLORS.mtype) },
+      mtype: { id: 'mtype', label: 'Magnitude type', filter: 'mtype', arr: D.raw_mtype, names: MTYPE_LABELS, K: 3, series: ident(MTYPE_LABELS, COLORS.mtype) },
     };
   }
 
@@ -188,6 +190,6 @@
     return fmtNum(v, MEASURES[id].dp);
   };
 
-  const api = { COLORS, EPOCH0_MS, FLAG_START_YEAR, MEASURES, loadData, loadDetails, build, newState, select, aggregate, summarize, sortIdx, medianFromBins, fmtInt, fmtNum, fmtEnergy, fmtTime, fmtMeasure };
+  const api = { COLORS, MTYPE_LABELS, EPOCH0_MS, FLAG_START_YEAR, MEASURES, loadData, loadDetails, build, newState, select, aggregate, summarize, sortIdx, medianFromBins, fmtInt, fmtNum, fmtEnergy, fmtTime, fmtMeasure };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.QD = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -29,7 +29,7 @@
   hero.speed = 1; hero.setMode('build');
   hero.setEvents(all, { yearRange: [1990, 2025], colorBy: 'depth' });
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  $('replay').onclick = () => hero.play();
+  $('replay').onclick = () => hero.restart();   // restart from 1990 every time, even while the opening animation is still running
   $('loading').classList.add('done');
   if (!reduce) setTimeout(() => hero.play(), 500);
 
