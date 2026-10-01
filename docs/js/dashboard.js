@@ -5,7 +5,7 @@
   const $ = (id) => document.getElementById(id);
   const TEXT = '#aab4c5', GRID = '#222a3a', SURFACE = '#121620';
 
-  const [D, world] = await Promise.all([QD.loadData(), fetch('data/world-110m.json').then((r) => r.json())]);
+  const [D, world, STATS] = await Promise.all([QD.loadData(), fetch('data/world-110m.json').then((r) => r.json()), fetch('data/report_stats.json').then((r) => r.json()).catch(() => null)]);
   const M = D.meta, N = D.n;
   $('pulled').textContent = M.pulled;
   const state = QD.newState();
@@ -19,14 +19,20 @@
 
   // ===================================================================== filter controls
   const syncers = [];
-  function chips(el, names, key, colors) {
+  function chips(el, names, key, colors, tips) {
+    const btns = [];
     names.forEach((nm, k) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', 'false');
       b.innerHTML = (colors ? `<span class="dot" style="background:${colors[k]}"></span>` : '') + nm;
       b.onclick = () => { const s = state[key]; s.has(k) ? s.delete(k) : s.add(k); schedule(); };
-      el.appendChild(b);
+      btns.push(b);
+      if (tips && tips[k]) {
+        const w = document.createElement('span'); w.className = 'chipwrap'; w.appendChild(b);
+        const i = document.createElement('button'); i.type = 'button'; i.className = 'info'; i.textContent = 'i'; i.dataset.tip = tips[k]; i.setAttribute('aria-label', 'What is ' + nm + '?');
+        w.appendChild(i); el.appendChild(w);
+      } else el.appendChild(b);
     });
-    syncers.push(() => [...el.children].forEach((b, k) => b.setAttribute('aria-pressed', state[key].has(k))));
+    syncers.push(() => btns.forEach((b, k) => b.setAttribute('aria-pressed', state[key].has(k))));
   }
   function dropdown(el, names, key, counts, labelEl, allLabel = 'All') {
     el.innerHTML = `<button type="button" class="dd-btn"><span class="dd-text">${allLabel}</span><span>▾</span></button>
@@ -55,7 +61,9 @@
   dropdown($('ddMacro'), M.macros, 'macro', tot.macro, $('macroVal'));
   chips($('chipsMag'), M.mclasses, 'mclass', COLORS.mag);
   chips($('chipsDepth'), M.dclasses, 'dclass', COLORS.depth);
-  chips($('chipsMtype'), QD.MTYPE_LABELS, 'mtype', COLORS.mtype);
+  chips($('chipsMtype'), QD.MTYPE_LABELS, 'mtype', COLORS.mtype, [
+    'Body-wave magnitude: calculated from seismic waves that travel through the Earth’s interior. The standard for small and mid-sized earthquakes.',
+    'Moment magnitude: a scale based on the physical size of the fault rupture and the energy released. Commonly used for larger earthquakes.', null]);
 
   const y0 = $('y0'), y1 = $('y1');
   y0.oninput = () => { if (+y0.value > +y1.value) y0.value = y1.value; state.y0 = +y0.value; schedule(); };
@@ -225,19 +233,77 @@
   }
 
   // ===================================================================== summary tiles
+  // Summary numbers glide from the previous value to the new one (~400 ms, ease-out). The first render and tiny changes are instant.
+  const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches, tileState = {};
+  function setTile(id, num, fmt, sub) {
+    const el = $('t_' + id), st = tileState[id] || (tileState[id] = { shown: null, raf: 0 });
+    $('t_' + id + '_s').textContent = sub; cancelAnimationFrame(st.raf);
+    if (!Number.isFinite(num)) { el.textContent = '–'; st.shown = null; return; }
+    const from = st.shown;
+    if (from == null || REDUCE || Math.abs(num - from) <= Math.max(1e-9, Math.abs(num) * 0.002)) { el.textContent = fmt(num); st.shown = num; return; }
+    const t0 = performance.now();
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / 400), v = from + (num - from) * (1 - Math.pow(1 - p, 3));
+      el.textContent = fmt(p < 1 ? v : num); st.shown = p < 1 ? v : num;
+      if (p < 1) st.raf = requestAnimationFrame(step);
+    };
+    st.raf = requestAnimationFrame(step);
+  }
   function renderTiles() {
     const s = sumry = QD.summarize(D, idx), n = s.n;
     $('selCount').textContent = fmtInt(n);
-    const set = (id, v, sub) => { $('t_' + id).textContent = v; $('t_' + id + '_s').textContent = sub; };
-    if (!n) { set('n', '0', 'no events match'); set('m6', '–', ''); set('avg', '–', ''); set('max', '–', ''); set('dep', '–', ''); set('en', '–', ''); return; }
-    set('n', fmtInt(n), `${fmtNum(n / N * 100, n / N < 0.1 ? 2 : 1)}% of all ${fmtInt(N)}`);
-    set('m6', fmtInt(s.m6), `${fmtNum(s.m6 / n * 100, 1)}% of this view`);
-    set('avg', fmtNum(s.avgMag, 2), `median ${fmtNum(s.medMag, 2)}`);
-    const b = s.strongest;
-    set('max', 'M' + fmtNum(D.mag[b], 1), `${fmtTime(D, b).slice(0, 10)} · ${D.details ? D.details.place[b] : regionOf(b)}`);
-    set('dep', fmtNum(s.medDepth, 1) + ' km', `${fmtNum(s.shallow / n * 100, 0)}% shallow (<70 km)`);
-    set('en', fmtNum(s.energyShare, s.energyShare < 10 ? 1 : 0) + '%', `${fmtEnergy(s.energy / 1e15)} of ${fmtEnergy(D.totalEnergy / 1e15)}`);
+    if (!n) { ['n', 'm6', 'avg', 'max', 'dep', 'en'].forEach((id) => setTile(id, NaN, null, id === 'n' ? 'no events match' : '')); $('t_n').textContent = '0'; tileState.n.shown = 0; return; }
+    const b = s.strongest, dp = s.energyShare < 10 ? 1 : 0;
+    setTile('n', n, fmtInt, `${fmtNum(n / N * 100, n / N < 0.1 ? 2 : 1)}% of all ${fmtInt(N)}`);
+    setTile('m6', s.m6, fmtInt, `${fmtNum(s.m6 / n * 100, 1)}% of this view`);
+    setTile('avg', s.avgMag, (v) => fmtNum(v, 2), `median ${fmtNum(s.medMag, 2)}`);
+    setTile('max', D.mag[b], (v) => 'M' + fmtNum(v, 1), `${fmtTime(D, b).slice(0, 10)} · ${D.details ? D.details.place[b] : regionOf(b)}`);
+    setTile('dep', s.medDepth, (v) => fmtNum(v, 1) + ' km', `${fmtNum(s.shallow / n * 100, 0)}% shallow (<70 km)`);
+    setTile('en', s.energyShare, (v) => fmtNum(v, dp) + '%', `${fmtEnergy(s.energy / 1e15)} of ${fmtEnergy(D.totalEnergy / 1e15)}`);
   }
+
+  // ===================================================================== "Did you know?" (whole-dataset facts from report_stats.json)
+  const facts = [];
+  if (STATS) {
+    try {
+      const S = STATS, r0 = Math.round, f5 = S.f5_pareto, a = f5.top10[0], b = f5.top10[1];
+      facts.push(`Only <b>${S.f2_magnitude.m6plus_share}%</b> of the ${fmtInt(N)} earthquakes are magnitude 6 or larger.`);
+      facts.push(`Magnitude 7+ earthquakes are just <b>${S.f2_magnitude.share['7.0+']}%</b> of events but release about <b>${r0(f5.m7plus_energy_share)}%</b> of the estimated energy.`);
+      facts.push(`The 10 busiest regions account for about <b>${r0(S.f3_concentration.top10_share)}%</b> of all earthquakes.`);
+      if (a.mag === b.mag && a.share === b.share && a.region === 'Indonesia' && b.region === 'Japan' && a.time.slice(0, 4) === '2004' && b.time.slice(0, 4) === '2011') {
+        facts.push(`The 2004 Sumatra and 2011 Tohoku earthquakes (both M${a.mag.toFixed(1)}) each released about <b>${a.share}%</b> of the estimated energy.`);
+      }
+      facts.push(`About <b>${r0(S.f6_depth.overall['Shallow (<70 km)'].share)}%</b> of earthquakes are shallow — less than 70 km deep.`);
+      facts.push(`Just <b>${f5.events_for_50pct}</b> earthquakes released half of all the estimated energy since 1990.`);
+    } catch (e) { facts.length = 0; }
+  }
+  let factIdx = 0;
+  const factText = () => facts[factIdx] + ' <span class="ins-scope">· whole dataset</span>';
+  if (facts.length) {
+    $('insText').innerHTML = factText();
+    $('insNext').onclick = () => {
+      factIdx = (factIdx + 1) % facts.length;
+      if (REDUCE) { $('insText').innerHTML = factText(); return; }
+      $('insText').classList.add('fade'); setTimeout(() => { $('insText').innerHTML = factText(); $('insText').classList.remove('fade'); }, 180);
+    };
+  } else document.querySelector('.insight').hidden = true;
+
+  // ===================================================================== largest earthquakes in the current selection
+  const escHtml = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function renderTop() {
+    const top = [], raw = D.raw_mag;                          // magnitude high -> low; ties keep the earlier event first (idx is time-ordered)
+    for (let j = 0; j < idx.length; j++) {
+      const i = idx[j];
+      if (top.length === 5 && raw[i] <= raw[top[4]]) continue;
+      let p = top.length; while (p > 0 && raw[top[p - 1]] < raw[i]) p--;
+      top.splice(p, 0, i); if (top.length > 5) top.pop();
+    }
+    $('topqList').innerHTML = top.length ? top.map((i) =>
+      `<button type="button" class="topq-item${i === map.pinned ? ' on' : ''}" data-i="${i}"><b>M${fmtNum(D.mag[i], raw[i] % 10 ? 2 : 1)}</b><span>${escHtml(regionOf(i))}</span><span>${D.year[i]}</span></button>`).join('')
+      : '<div class="topq-empty">No events in this selection.</div>';
+  }
+  $('topqList').onclick = (e) => { const b = e.target.closest('.topq-item'); if (b) map.focus(+b.dataset.i); };
+  map.onPinChange = (i) => document.querySelectorAll('#topqList .topq-item').forEach((b) => b.classList.toggle('on', +b.dataset.i === i));
 
   // ===================================================================== table
   const COLS = [
@@ -339,7 +405,7 @@
     idx = QD.select(D, state);
     syncers.forEach((f) => f());
     renderTiles(); describeSelection();
-    map.setEvents(idx, { yearRange: [state.y0, state.y1], colorBy: view.color }); legend();
+    map.setEvents(idx, { yearRange: [state.y0, state.y1], colorBy: view.color }); legend(); renderTop();
     renderCharts(); renderHist(); renderHeat();
     sortRows(); view.page = 0; renderTable();
   }
@@ -351,6 +417,6 @@
 
   update();
   $('loading').classList.add('done');
-  QD.loadDetails(D).then(() => { renderTiles(); renderTable(); });
+  QD.loadDetails(D).then(() => { renderTiles(); renderTable(); renderTop(); });
   window.__dash = { D, state, view, map, charts, get idx() { return idx; }, update };
 })();

@@ -44,9 +44,10 @@ docs/                             the website (GitHub Pages serves this folder)
   dashboard.html                  dashboard page
   css/style.css                   shared styles for both pages
   js/data.js                      loads the data; filtering, aggregation, summary maths (shared by both pages)
-  js/map.js                       canvas world map with timeline animation, zoom and hover
+  js/map.js                       canvas world map with timeline animation, zoom, hover tooltip and click-to-pin event card
+  js/info.js                      small "i" help tooltips for technical terms (dashboard)
   js/report.js                    report page: fills numbers from report_stats.json, draws the 8 findings' charts
-  js/dashboard.js                 dashboard: filters, switches, tiles, charts, table
+  js/dashboard.js                 dashboard: filters, switches, animated summary numbers, did-you-know strip, charts, largest-earthquakes list, table
   data/quakes.bin                 the earthquake table in compact binary form (read by the browser)
   data/meta.json                  column layout and category names for quakes.bin
   data/details.json               place text, USGS event ids and full region names (loaded after the page is interactive)

@@ -65,16 +65,15 @@
       <div class="fgroup">
         <div class="lab">Magnitude type</div>
         <div class="chips" id="chipsMtype"></div>
-        <p class="help">Magnitude can be calculated in different ways. <b>Body-wave (mb)</b> uses seismic waves that travel through the Earth and is the standard for small and mid-sized events; <b>moment magnitude (Mw)</b> reflects the size of the fault rupture and is preferred for large events; <b>other types</b> are older, local or regional methods.</p>
+        <p class="help">Different ways of calculating magnitude — tap <span class="info-inline">i</span> for what each means.</p>
       </div>
       <div class="fgroup">
-        <div class="lab">Tsunami flag <span class="badge">2013–2025 only</span></div>
+        <div class="lab"><span>Tsunami flag <button type="button" class="info" data-tip="USGS marks events that may have generated a tsunami. It is a flag, not a measured tsunami, and it is only recorded from 2013." aria-label="What is the tsunami flag?">i</button><span class="badge">2013–2025 only</span></span></div>
         <div class="seg" id="segTsu">
           <button type="button" data-v="all" aria-pressed="true">All</button>
           <button type="button" data-v="1" aria-pressed="false">Flagged</button>
           <button type="button" data-v="0" aria-pressed="false">Not flagged</button>
         </div>
-        <p class="help">USGS flags events that <i>may have generated</i> a tsunami; it is not a measured tsunami.</p>
         <div class="notice" id="tsuNotice"></div>
       </div>
     </details>
@@ -94,18 +93,26 @@
       <div class="tiles" aria-label="Summary numbers">
         <div class="tile"><div class="k">Events</div><div class="v" id="t_n">–</div><div class="s" id="t_n_s"></div></div>
         <div class="tile"><div class="k">M6+ events</div><div class="v" id="t_m6">–</div><div class="s" id="t_m6_s"></div></div>
-        <div class="tile"><div class="k">Average magnitude</div><div class="v" id="t_avg">–</div><div class="s" id="t_avg_s"></div></div>
+        <div class="tile"><div class="k">Average magnitude <button type="button" class="info" data-tip="A number describing an earthquake’s size. Each whole step up means roughly 32 times more energy is released." aria-label="What is magnitude?">i</button></div><div class="v" id="t_avg">–</div><div class="s" id="t_avg_s"></div></div>
         <div class="tile"><div class="k">Strongest event</div><div class="v" id="t_max">–</div><div class="s" id="t_max_s"></div></div>
-        <div class="tile"><div class="k">Median depth</div><div class="v" id="t_dep">–</div><div class="s" id="t_dep_s"></div></div>
-        <div class="tile"><div class="k">Share of total energy</div><div class="v" id="t_en">–</div><div class="s" id="t_en_s"></div></div>
+        <div class="tile"><div class="k">Median depth <button type="button" class="info" data-tip="How far below the surface the earthquake began. Shallow earthquakes tend to be felt more strongly at the surface." aria-label="What is depth?">i</button></div><div class="v" id="t_dep">–</div><div class="s" id="t_dep_s"></div></div>
+        <div class="tile"><div class="k">Share of total energy <button type="button" class="info" data-tip="Calculated from each earthquake’s magnitude (about 32 times more energy per magnitude step), so it is an estimate, not a direct measurement." aria-label="What is estimated energy?">i</button></div><div class="v" id="t_en">–</div><div class="s" id="t_en_s"></div></div>
       </div>
     </section>
+
+
+    <!-- did-you-know strip (whole-dataset facts, not affected by filters) -->
+    <aside class="insight" aria-label="Did you know?">
+      <span class="ins-kicker">Did you know?</span>
+      <span class="ins-text" id="insText" aria-live="polite"></span>
+      <button type="button" class="ins-next" id="insNext">Next insight →</button>
+    </aside>
 
     <!-- 3 · EXPLORE BY MEASURE AND BREAKDOWN -->
     <section class="block" aria-labelledby="h-exp">
       <div class="block-head"><span class="step">3</span><div><h2 id="h-exp">Explore by measure and breakdown</h2><p>Choose <b>what to measure</b> and <b>how to split the events</b>. The trend chart, the ranking and the summary table follow your choices.</p></div></div>
       <div class="viewbar" aria-label="Measure and breakdown">
-        <div class="grp"><span>Measure</span><div class="seg primary" id="segMeasure"></div></div>
+        <div class="grp"><span>Measure <button type="button" class="info" data-tip="Total energy is estimated from magnitude. Average significance is a USGS score for how notable an earthquake is (higher = more notable), combining magnitude and reported impact." aria-label="About total energy and significance">i</button></span><div class="seg primary" id="segMeasure"></div></div>
         <div class="grp"><span>Break down by</span><div class="seg primary" id="segBreak"></div></div>
       </div>
       <div class="cards">
@@ -137,6 +144,10 @@
           <div class="grp-mini">Animation <div class="seg mini" id="segMode"><button type="button" data-v="build" aria-pressed="true" title="Events accumulate over time">Build-up</button><button type="button" data-v="pulse" aria-pressed="false" title="Only recent events stay lit">Pulse</button></div></div>
           <div class="grp-mini">Speed <div class="seg mini" id="segSpeed"><button type="button" data-v="0.5" aria-pressed="false">0.5×</button><button type="button" data-v="1" aria-pressed="true">1×</button><button type="button" data-v="2" aria-pressed="false">2×</button><button type="button" data-v="4" aria-pressed="false">4×</button></div></div>
           <div class="legend" id="mapLegend"></div>
+        </div>
+        <div class="topq" id="topq">
+          <div class="topq-title">Largest earthquakes in this selection <span>click one to find it on the map</span></div>
+          <div class="topq-list" id="topqList"></div>
         </div>
       </section>
     </section>
@@ -187,6 +198,7 @@
 <script src="vendor/d3.min.js"></script>
 <script src="vendor/topojson-client.min.js"></script>
 <script src="vendor/echarts.min.js"></script>
+<script src="js/info.js"></script>
 <script src="js/data.js"></script>
 <script src="js/map.js"></script>
 <script src="js/dashboard.js"></script>

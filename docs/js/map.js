@@ -232,8 +232,17 @@
         (f.url ? `<a href="${f.url}" target="_blank" rel="noopener">Open USGS event page ↗</a>` : '<em>Loading event details…</em>');
       c.style.display = 'block';
     }
-    pin(i) { this.pinned = i; this.hover = -1; this._showTip(-1); this._card(i); this._drawFx(); QD.loadDetails(this.D).then(() => { if (this.pinned === i) this._card(i); }); }
-    unpin() { if (this.pinned < 0 && this.card.style.display !== 'block') return; this.pinned = -1; this.card.style.display = 'none'; this._drawFx(); }
+    pin(i) { this.pinned = i; this.hover = -1; this._showTip(-1); this._card(i); this._drawFx(); this.onPinChange && this.onPinChange(i); QD.loadDetails(this.D).then(() => { if (this.pinned === i) this._card(i); }); }
+    unpin() { if (this.pinned < 0 && this.card.style.display !== 'block') return; this.pinned = -1; this.card.style.display = 'none'; this._drawFx(); this.onPinChange && this.onPinChange(-1); }
+    // select an event from outside the map (e.g. a list): show it, open the same details card, and glide toward it
+    focus(i) {
+      if (this.cursor < this.idx.length) { this.pause(); this.showAll(); }           // make sure the event has been drawn
+      this.pin(i);
+      if (this._zoom) {
+        const k = Math.max(this.tf.k, 3), x = this.w / 2 - this.px[i] * k, y = this.h / 2 - this.py[i] * k;
+        d3.select(this.fx).transition().duration(600).call(this._zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
+      }
+    }
 
     _initZoom() {
       const z = document.createElement('div'); z.className = 'zoom';
